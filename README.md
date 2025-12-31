@@ -57,14 +57,9 @@ docker-compose down
 
 ### Deployment Steps
 
-1. **Create Database**
-```bash
-psql -U postgres
-CREATE DATABASE blogyapay;
-CREATE USER blogyapay_user WITH PASSWORD 'secure_password';
-GRANT ALL PRIVILEGES ON DATABASE blogyapay TO blogyapay_user;
-\q
-```
+1. **Get Database Credentials**
+   - PostgreSQL connection string (provided by admin)
+   - Redis connection string (provided by admin)
 
 2. **Configure Coolify**
    - Add GitHub repository

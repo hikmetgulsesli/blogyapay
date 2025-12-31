@@ -187,17 +187,22 @@ NODE_ENV=production
 
 ### Database Setup
 
-**Initial Setup:**
-```bash
-# Connect to VPS and create database
-psql -U postgres
-CREATE DATABASE blogyapay;
-CREATE USER blogyapay_user WITH PASSWORD 'secure_password';
-GRANT ALL PRIVILEGES ON DATABASE blogyapay TO blogyapay_user;
-\q
+**Using Existing Database:**
+The VPS already has PostgreSQL and Redis installed and running.
+Use the provided connection strings in Coolify environment variables.
 
-# Run migrations after first deployment
+```bash
+# After first deployment, run migrations
 npm run migrate
+```
+
+**Connection String Format:**
+```bash
+# PostgreSQL (use credentials provided by admin)
+DATABASE_URL=postgresql://username:password@host:5432/database_name
+
+# Redis (use credentials provided by admin)
+REDIS_URL=redis://host:6379
 ```
 
 ### Local Development with Docker
