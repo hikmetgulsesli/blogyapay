@@ -25,8 +25,11 @@ BlogYapay is an AI-powered platform for automating content creation, management,
 - **Anthropic API (Claude 3.5 Sonnet)** - Alternative LLM with large context windows
 
 ### Database
-- **PostgreSQL** - User data, blog credentials, content drafts, scheduling
-- Direct PostgreSQL connection (no Supabase managed services)
+- **Supabase (Self-hosted)** - PostgreSQL + Auth + Storage + Real-time
+- Built-in authentication and user management
+- File storage for images and media
+- Auto-generated REST API
+- Row-level security (RLS)
 
 ### APIs & Integrations
 - **Google Blogger API v3** - Blog creation, posting, media upload
@@ -41,8 +44,12 @@ BlogYapay is an AI-powered platform for automating content creation, management,
 
 ### Multi-Tier System
 1. **Frontend (Next.js)**: Dashboard, blog list, content editor, scheduling UI, analytics
-2. **Backend (FastAPI)**: API routes, AI content generation, Blogger API integration, queue management
-3. **Database (PostgreSQL)**: User accounts, blog tokens, content storage, publish schedules
+2. **Backend (FastAPI)**: AI content generation, Blogger API integration, queue management
+3. **Database (Supabase)**: PostgreSQL + Auth + Storage + Real-time API
+   - User authentication and management
+   - Blog credentials and OAuth tokens (encrypted)
+   - Content drafts and publish schedules
+   - Image/media file storage
 4. **Job Queue (Redis)**: Background processing for content generation and publishing to avoid blocking
 
 ### Key Data Flows
@@ -108,10 +115,12 @@ pip install -r requirements.txt    # Install dependencies
 uvicorn main:app --reload          # Start development server
 pytest                             # Run tests
 
-# Database (PostgreSQL)
-psql -h localhost -U postgres -d blogyapay    # Connect to database
-npm run migrate                               # Run migrations (if using Prisma/TypeORM)
-npm run db:seed                               # Seed database
+# Database (Supabase)
+npm run supabase:start           # Start local Supabase (Docker)
+npm run supabase:stop            # Stop local Supabase
+npm run db:migrate               # Run database migrations
+npm run db:seed                  # Seed database
+npm run supabase:gen-types       # Generate TypeScript types from database
 ```
 
 ## Key Integration Points
@@ -142,7 +151,7 @@ npm run db:seed                               # Seed database
 - **Domain:** https://blogyapay.setrox.net
 - **Port Mapping:** External port 80 → Internal port 3000
 - **Auto-Deploy:** GitHub integration (push to main branch)
-- **Database:** PostgreSQL (blogyapay database on same VPS)
+- **Database:** Supabase (self-hosted on same VPS)
 - **Cache/Queue:** Redis (on same VPS)
 
 ### Deployment Configuration
@@ -156,8 +165,10 @@ npm run db:seed                               # Seed database
 **Environment Variables:**
 Required environment variables in Coolify:
 ```bash
-# Database
-DATABASE_URL=postgresql://user:password@localhost:5432/blogyapay
+# Supabase (from Coolify self-hosted Supabase)
+NEXT_PUBLIC_SUPABASE_URL=https://supabase.yourdomain.com
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -166,7 +177,7 @@ REDIS_URL=redis://localhost:6379
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 
-# Google OAuth
+# Google OAuth (Blogger API)
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GOOGLE_REDIRECT_URI=https://blogyapay.setrox.net/api/auth/callback
@@ -187,22 +198,35 @@ NODE_ENV=production
 
 ### Database Setup
 
-**Using Existing Database:**
-The VPS already has PostgreSQL and Redis installed and running.
-Use the provided connection strings in Coolify environment variables.
+**Using Coolify Self-hosted Supabase:**
 
+1. **Supabase Instance:** Already deployed on Coolify
+2. **Get Credentials:** From Coolify Supabase dashboard
+   - Supabase URL
+   - Anon (public) key
+   - Service role (admin) key
+
+3. **Run Migrations:**
 ```bash
-# After first deployment, run migrations
-npm run migrate
+# After first app deployment
+npm run db:migrate
 ```
 
-**Connection String Format:**
-```bash
-# PostgreSQL (use credentials provided by admin)
-DATABASE_URL=postgresql://username:password@host:5432/database_name
+4. **Set up Storage Buckets:**
+```sql
+-- In Supabase SQL editor
+CREATE BUCKET blog_images;
+CREATE BUCKET user_avatars;
+```
 
-# Redis (use credentials provided by admin)
-REDIS_URL=redis://host:6379
+5. **Enable RLS Policies:**
+```sql
+-- Example RLS policy for blog_credentials table
+ALTER TABLE blog_credentials ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can only see their own blogs"
+ON blog_credentials FOR SELECT
+USING (auth.uid() = user_id);
 ```
 
 ### Local Development with Docker

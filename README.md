@@ -51,15 +51,16 @@ docker-compose down
 
 ### Prerequisites
 - VPS with Coolify installed
-- PostgreSQL database created
+- Supabase instance deployed on Coolify
 - Redis instance running
 - Domain configured (blogyapay.setrox.net)
 
 ### Deployment Steps
 
-1. **Get Database Credentials**
-   - PostgreSQL connection string (provided by admin)
-   - Redis connection string (provided by admin)
+1. **Setup Supabase**
+   - Deploy Supabase in Coolify (see [SUPABASE_SETUP.md](./SUPABASE_SETUP.md))
+   - Get Supabase URL, Anon Key, Service Role Key
+   - Get Redis connection string
 
 2. **Configure Coolify**
    - Add GitHub repository
@@ -78,7 +79,7 @@ docker-compose down
 
 - **Frontend:** Next.js 14+ (App Router)
 - **Backend:** FastAPI (Python)
-- **Database:** PostgreSQL
+- **Database:** Supabase (PostgreSQL + Auth + Storage + Real-time)
 - **Cache/Queue:** Redis
 - **AI:** OpenAI GPT-4o, Anthropic Claude
 - **Deployment:** Docker + Coolify
@@ -102,6 +103,7 @@ blogyapay/
 
 - [CLAUDE.md](./CLAUDE.md) - Development guidelines and architecture
 - [PRD.md](./PRD.md) - Product requirements document
+- [SUPABASE_SETUP.md](./SUPABASE_SETUP.md) - Comprehensive Supabase setup guide
 
 ## License
 
